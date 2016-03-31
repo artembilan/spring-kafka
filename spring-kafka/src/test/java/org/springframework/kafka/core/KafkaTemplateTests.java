@@ -39,6 +39,9 @@ import org.springframework.kafka.support.ProducerListenerAdapter;
 import org.springframework.kafka.test.rule.KafkaEmbedded;
 import org.springframework.kafka.test.utils.KafkaTestUtils;
 
+import reactor.core.publisher.Mono;
+import reactor.core.publisher.MonoProcessor;
+
 
 /**
  * @author Gary Russell
@@ -93,6 +96,9 @@ public class KafkaTemplateTests {
 		assertThat(received).has(key((Integer) null));
 		assertThat(received).has(partition(0));
 		assertThat(received).has(value("qux"));
+
+		Mono<RecordMetadata> mono = template.reactiveSend(TEMPLATE_TOPIC, 0, 22, "Mono");
+		assertThat(mono.get(10000)).isNotNull();
 	}
 
 	@Test
@@ -114,6 +120,15 @@ public class KafkaTemplateTests {
 		template.syncSend("foo");
 		template.flush();
 		assertThat(latch.await(10, TimeUnit.SECONDS)).isTrue();
+	}
+
+	@Test
+	public void testMono() throws Exception {
+		MonoProcessor<String> promise = MonoProcessor.create();
+		promise.onNext("test");
+		final CountDownLatch successCountDownLatch = new CountDownLatch(1);
+		promise.consume(v -> successCountDownLatch.countDown());
+		assertThat(successCountDownLatch.await(10, TimeUnit.SECONDS)).isTrue();
 	}
 
 }

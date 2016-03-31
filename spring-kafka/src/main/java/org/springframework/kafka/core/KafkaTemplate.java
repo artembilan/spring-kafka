@@ -29,6 +29,9 @@ import org.springframework.kafka.support.LoggingProducerListener;
 import org.springframework.kafka.support.ProducerListener;
 import org.springframework.kafka.support.ProducerListenerInvokingCallback;
 
+import reactor.core.publisher.Mono;
+import reactor.core.publisher.MonoProcessor;
+
 
 /**
  * A template for executing high-level operations.
@@ -88,28 +91,28 @@ public class KafkaTemplate<K, V> implements KafkaOperations<K, V> {
 	}
 
 	@Override
-	public Future<RecordMetadata>  send(V data) {
+	public Future<RecordMetadata> send(V data) {
 		return send(this.defaultTopic, data);
 	}
 
 	@Override
-	public Future<RecordMetadata>  send(K key, V data) {
+	public Future<RecordMetadata> send(K key, V data) {
 		return send(this.defaultTopic, key, data);
 	}
 
 	@Override
-	public Future<RecordMetadata>  send(int partition, K key, V data) {
+	public Future<RecordMetadata> send(int partition, K key, V data) {
 		return send(this.defaultTopic, partition, key, data);
 	}
 
 	@Override
-	public Future<RecordMetadata>  send(String topic, V data) {
+	public Future<RecordMetadata> send(String topic, V data) {
 		ProducerRecord<K, V> producerRecord = new ProducerRecord<>(topic, data);
 		return doSend(producerRecord);
 	}
 
 	@Override
-	public Future<RecordMetadata>  send(String topic, K key, V data) {
+	public Future<RecordMetadata> send(String topic, K key, V data) {
 		ProducerRecord<K, V> producerRecord = new ProducerRecord<>(topic, key, data);
 		return doSend(producerRecord);
 	}
@@ -121,7 +124,7 @@ public class KafkaTemplate<K, V> implements KafkaOperations<K, V> {
 	}
 
 	@Override
-	public Future<RecordMetadata>  send(String topic, int partition, K key, V data) {
+	public Future<RecordMetadata> send(String topic, int partition, K key, V data) {
 		ProducerRecord<K, V> producerRecord = new ProducerRecord<>(topic, partition, key, data);
 		return doSend(producerRecord);
 	}
@@ -178,6 +181,35 @@ public class KafkaTemplate<K, V> implements KafkaOperations<K, V> {
 		Future<RecordMetadata> future = send(topic, partition, key, data);
 		flush();
 		return future.get();
+	}
+
+	public Mono<RecordMetadata> reactiveSend(String topic, int partition, K key, V data) {
+		if (this.producer == null) {
+			synchronized (this) {
+				if (this.producer == null) {
+					this.producer = this.producerFactory.createProducer();
+				}
+			}
+		}
+
+		ProducerRecord<K, V> producerRecord = new ProducerRecord<>(topic, partition, key, data);
+
+		if (this.logger.isTraceEnabled()) {
+			this.logger.trace("Sending: " + producerRecord);
+		}
+
+		final MonoProcessor<RecordMetadata> recordMetadataMonoProcessor = MonoProcessor.create();
+
+		this.producer.send(producerRecord, (metadata, exception) -> {
+			if (exception != null) {
+				recordMetadataMonoProcessor.onError(exception);
+			}
+			else {
+				recordMetadataMonoProcessor.onNext(metadata);
+			}
+		});
+
+		return recordMetadataMonoProcessor;
 	}
 
 	/**

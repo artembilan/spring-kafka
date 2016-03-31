@@ -37,9 +37,7 @@ allprojects {
 	repositories {
 		maven { url 'https://repo.spring.io/libs-release' }
 		maven { url 'https://repo.spring.io/libs-milestone' }
-		if (project.hasProperty('platformVersion')) {
-			maven { url 'https://repo.spring.io/snapshot' }
-		}
+		maven { url 'https://repo.spring.io/snapshot' }
 	}
 
 }
@@ -65,8 +63,8 @@ subprojects { subproject ->
 		}
 	}
 
-	sourceCompatibility = 1.7
-	targetCompatibility = 1.7
+	sourceCompatibility = 1.8
+	targetCompatibility = 1.8
 
 	ext {
 		assertjVersion = '3.3.0'
@@ -78,6 +76,7 @@ subprojects { subproject ->
 		log4jVersion = '1.2.17'
 		mockitoVersion = '1.9.5'
 	//	metricsVersion = '2.2.0'
+		reactorVersion = '2.5.0.BUILD-SNAPSHOT'
 		scalaVersion = '2.11'
 		reactor2Version = '2.0.6.RELEASE'
 		springRetryVersion = '1.1.2.RELEASE'
@@ -146,7 +145,7 @@ project ('spring-kafka') {
 //		compile ("org.apache.avro:avro:$avroVersion", optional)
 //		compile ("org.apache.avro:avro-compiler:$avroVersion", optional)
 //		compile "com.goldmansachs:gs-collections:$gsCollectionsVersion"
-//		compile "io.projectreactor:reactor-core:$reactor2Version"
+		compile "io.projectreactor:reactor-core:$reactorVersion"
 
 		compile "org.apache.kafka:kafka-clients:$kafkaVersion"
 
