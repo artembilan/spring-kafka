@@ -24,6 +24,7 @@ import static org.springframework.kafka.test.assertj.KafkaConditions.value;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
@@ -98,7 +99,9 @@ public class KafkaTemplateTests {
 		assertThat(received).has(value("qux"));
 
 		Mono<RecordMetadata> mono = template.reactiveSend(TEMPLATE_TOPIC, 0, 22, "Mono");
-		assertThat(mono.get(10000)).isNotNull();
+		final CountDownLatch successCountDownLatch = new CountDownLatch(1);
+		mono.consume(v -> successCountDownLatch.countDown());
+		assertThat(successCountDownLatch.await(10, TimeUnit.SECONDS)).isTrue();
 	}
 
 	@Test
@@ -125,7 +128,13 @@ public class KafkaTemplateTests {
 	@Test
 	public void testMono() throws Exception {
 		MonoProcessor<String> promise = MonoProcessor.create();
-		promise.onNext("test");
+		final CountDownLatch onNextCountDownLatch = new CountDownLatch(1);
+		Executors.newSingleThreadExecutor().execute(() -> {
+			promise.onNext("test");
+			onNextCountDownLatch.countDown();
+		});
+		assertThat(onNextCountDownLatch.await(10, TimeUnit.SECONDS)).isTrue();
+
 		final CountDownLatch successCountDownLatch = new CountDownLatch(1);
 		promise.consume(v -> successCountDownLatch.countDown());
 		assertThat(successCountDownLatch.await(10, TimeUnit.SECONDS)).isTrue();
