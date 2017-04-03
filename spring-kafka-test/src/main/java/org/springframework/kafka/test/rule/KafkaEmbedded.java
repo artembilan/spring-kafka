@@ -53,6 +53,7 @@ import org.springframework.retry.support.RetryTemplate;
 import kafka.admin.AdminUtils;
 import kafka.admin.AdminUtils$;
 import kafka.server.KafkaConfig;
+import kafka.server.KafkaConfig$;
 import kafka.server.KafkaServer;
 import kafka.server.NotRunning;
 import kafka.utils.CoreUtils;
@@ -87,8 +88,6 @@ public class KafkaEmbedded extends ExternalResource implements KafkaRule {
 	private final int partitionsPerTopic;
 
 	private final List<KafkaServer> kafkaServers = new ArrayList<>();
-
-	private final List<Integer> ports = new ArrayList<>();
 
 	private EmbeddedZookeeper zookeeper;
 
@@ -140,11 +139,9 @@ public class KafkaEmbedded extends ExternalResource implements KafkaRule {
 		this.zookeeperClient = new ZkClient(this.zkConnect, zkSessionTimeout, zkConnectionTimeout,
 				ZKStringSerializer$.MODULE$);
 		this.kafkaServers.clear();
-		this.ports.clear();
 		for (int i = 0; i < this.count; i++) {
 			ServerSocket ss = ServerSocketFactory.getDefault().createServerSocket(0);
 			int randomPort = ss.getLocalPort();
-			this.ports.add(randomPort);
 			ss.close();
 			Properties brokerConfigProperties = TestUtils.createBrokerConfig(i, this.zkConnect, this.controlledShutdown,
 					true, randomPort,
@@ -152,6 +149,7 @@ public class KafkaEmbedded extends ExternalResource implements KafkaRule {
 					scala.Option.<File>apply(null),
 					scala.Option.<Properties>apply(null),
 					true, false, 0, false, 0, false, 0, scala.Option.<String>apply(null));
+			brokerConfigProperties.setProperty(KafkaConfig$.MODULE$.PortProp(), "" + randomPort);
 			brokerConfigProperties.setProperty("replica.socket.timeout.ms", "1000");
 			brokerConfigProperties.setProperty("controller.socket.timeout.ms", "1000");
 			brokerConfigProperties.setProperty("offsets.topic.replication.factor", "1");
@@ -224,14 +222,15 @@ public class KafkaEmbedded extends ExternalResource implements KafkaRule {
 	}
 
 	public BrokerAddress getBrokerAddress(int i) {
-		return new BrokerAddress("127.0.0.1", this.ports.get(i));
+		KafkaServer kafkaServer = this.kafkaServers.get(i);
+		return new BrokerAddress(kafkaServer.config().hostName(), kafkaServer.config().port());
 	}
 
 	@Override
 	public BrokerAddress[] getBrokerAddresses() {
 		List<BrokerAddress> addresses = new ArrayList<BrokerAddress>();
-		for (int port : this.ports) {
-			addresses.add(new BrokerAddress("127.0.0.1", port));
+		for (KafkaServer kafkaServer : this.kafkaServers) {
+			addresses.add(new BrokerAddress("127.0.0.1", kafkaServer.config().port()));
 		}
 		return addresses.toArray(new BrokerAddress[addresses.size()]);
 	}
