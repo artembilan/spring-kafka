@@ -140,7 +140,7 @@ public class KafkaStreamsTests {
 			KStream<Integer, String> stream = kStreamBuilder.stream(STREAMING_TOPIC1);
 			stream.mapValues(String::toUpperCase)
 					.mapValues(Foo::new)
-					.through(Serdes.Integer(), new JsonSerde<>(Foo.class), FOOS)
+					.through(Serdes.Integer(), new JsonSerde<Foo>() { }, FOOS)
 					.mapValues(Foo::getName)
 					.groupByKey()
 					.reduce((value1, value2) -> value1 + value2, TimeWindows.of(1000), "windowStore")

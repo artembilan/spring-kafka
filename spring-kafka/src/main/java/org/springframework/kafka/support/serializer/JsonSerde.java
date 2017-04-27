@@ -22,8 +22,11 @@ import org.apache.kafka.common.serialization.Deserializer;
 import org.apache.kafka.common.serialization.Serde;
 import org.apache.kafka.common.serialization.Serializer;
 
+import org.springframework.core.ResolvableType;
 import org.springframework.util.Assert;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
@@ -46,19 +49,29 @@ public class JsonSerde<T> implements Serde<T> {
 	private final JsonDeserializer<T> jsonDeserializer;
 
 	public JsonSerde() {
-		this(new JsonSerializer<>(), new JsonDeserializer<T>() { });
+		this((ObjectMapper) null);
 	}
 
 	public JsonSerde(Class<T> targetType) {
-		this(new JsonSerializer<>(), new JsonDeserializer<T>(targetType) { });
+		this(targetType, null);
 	}
 
 	public JsonSerde(ObjectMapper objectMapper) {
-		this(new JsonSerializer<>(objectMapper), new JsonDeserializer<T>(objectMapper) { });
+		this(null, objectMapper);
 	}
 
+	@SuppressWarnings("unchecked")
 	public JsonSerde(Class<T> targetType, ObjectMapper objectMapper) {
-		this(new JsonSerializer<>(objectMapper), new JsonDeserializer<T>(targetType, objectMapper) { });
+		if (objectMapper == null) {
+			objectMapper = new ObjectMapper();
+			objectMapper.configure(MapperFeature.DEFAULT_VIEW_INCLUSION, false);
+			objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+		}
+		this.jsonSerializer = new JsonSerializer<>(objectMapper);
+		if (targetType == null) {
+			targetType = (Class<T>) ResolvableType.forClass(getClass()).getSuperType().resolveGeneric(0);
+		}
+		this.jsonDeserializer = new JsonDeserializer<>(targetType, objectMapper);
 	}
 
 	public JsonSerde(JsonSerializer<T> jsonSerializer, JsonDeserializer<T> jsonDeserializer) {
