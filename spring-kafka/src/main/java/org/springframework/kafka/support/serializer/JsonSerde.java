@@ -22,6 +22,8 @@ import org.apache.kafka.common.serialization.Deserializer;
 import org.apache.kafka.common.serialization.Serde;
 import org.apache.kafka.common.serialization.Serializer;
 
+import org.springframework.util.Assert;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
@@ -34,7 +36,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * @param <T> target class for serialization/deserialization
  *
  * @author Marius Bogoevici
- * @since 2.0
+ *
+ * @since 1.1.5
  */
 public class JsonSerde<T> implements Serde<T> {
 
@@ -43,26 +46,26 @@ public class JsonSerde<T> implements Serde<T> {
 	private final JsonDeserializer<T> jsonDeserializer;
 
 	public JsonSerde() {
-		this(null, null);
+		this(new JsonSerializer<>(), new JsonDeserializer<T>() { });
 	}
 
 	public JsonSerde(Class<T> targetType) {
-		this(targetType, null);
+		this(new JsonSerializer<>(), new JsonDeserializer<T>(targetType) { });
 	}
 
 	public JsonSerde(ObjectMapper objectMapper) {
-		this(null, objectMapper);
+		this(new JsonSerializer<>(objectMapper), new JsonDeserializer<T>(objectMapper) { });
 	}
 
 	public JsonSerde(Class<T> targetType, ObjectMapper objectMapper) {
-		this.jsonSerializer = objectMapper == null ? new JsonSerializer<>() : new JsonSerializer<>(objectMapper);
-		if (objectMapper == null) {
-			this.jsonDeserializer = targetType == null ? new JsonDeserializer<>() : new JsonDeserializer<>(targetType);
-		}
-		else {
-			this.jsonDeserializer = targetType == null ? new JsonDeserializer<>(objectMapper)
-					: new JsonDeserializer<>(targetType, objectMapper);
-		}
+		this(new JsonSerializer<>(objectMapper), new JsonDeserializer<T>(targetType, objectMapper) { });
+	}
+
+	public JsonSerde(JsonSerializer<T> jsonSerializer, JsonDeserializer<T> jsonDeserializer) {
+		Assert.notNull(jsonSerializer, "'jsonSerializer' must not be null.");
+		Assert.notNull(jsonDeserializer, "'jsonDeserializer' must not be null.");
+		this.jsonSerializer = jsonSerializer;
+		this.jsonDeserializer = jsonDeserializer;
 	}
 
 	@Override
@@ -86,4 +89,5 @@ public class JsonSerde<T> implements Serde<T> {
 	public Deserializer<T> deserializer() {
 		return this.jsonDeserializer;
 	}
+
 }
