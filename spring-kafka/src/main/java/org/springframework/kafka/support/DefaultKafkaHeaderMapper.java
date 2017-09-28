@@ -156,7 +156,6 @@ public class DefaultKafkaHeaderMapper implements KafkaHeaderMapper {
 		for (String pattern : patterns) {
 			this.matchers.add(new SimplePatternBasedHeaderMatcher(pattern));
 		}
-		@SuppressWarnings({ "rawtypes", "unchecked" })
 		Module module = new SimpleModule().addDeserializer(MimeType.class, new MimeTypeJsonDeserializer(objectMapper));
 		this.objectMapper.registerModule(module);
 	}

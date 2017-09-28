@@ -31,34 +31,31 @@ import com.fasterxml.jackson.databind.type.TypeFactory;
 /**
  * {@link MimeType} deserializer.
  *
- * @param <T> the type.
- *
  * @author Gary Russell
+ * @author Artem Bilan
+ *
  * @since 1.3
  *
  */
-public class MimeTypeJsonDeserializer<T extends MimeType> extends StdNodeBasedDeserializer<T> {
+public class MimeTypeJsonDeserializer extends StdNodeBasedDeserializer<MimeType> {
 
 	private static final long serialVersionUID = 1L;
 
 	private final ObjectMapper mapper;
 
-	@SuppressWarnings("unchecked")
 	public MimeTypeJsonDeserializer(ObjectMapper mapper) {
-		super((Class<T>) MimeType.class);
+		super(MimeType.class);
 		this.mapper = mapper;
 	}
 
-
-	@SuppressWarnings("unchecked")
 	@Override
-	public T convert(JsonNode root, DeserializationContext ctxt) throws IOException {
+	public MimeType convert(JsonNode root, DeserializationContext ctxt) throws IOException {
 		JsonNode type = root.get("type");
 		JsonNode subType = root.get("subtype");
 		JsonNode parameters = root.get("parameters");
 		Map<String, String> params = this.mapper.readValue(parameters.traverse(),
 				TypeFactory.defaultInstance().constructMapType(HashMap.class, String.class, String.class));
-		return (T) new MimeType(type.asText(), subType.asText(), params);
+		return new MimeType(type.asText(), subType.asText(), params);
 	}
 
 }
