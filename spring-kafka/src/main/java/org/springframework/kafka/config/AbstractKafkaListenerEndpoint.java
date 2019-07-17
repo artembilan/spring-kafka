@@ -22,7 +22,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Properties;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 import org.apache.commons.logging.LogFactory;
 
@@ -52,6 +51,7 @@ import org.springframework.lang.Nullable;
 import org.springframework.retry.RecoveryCallback;
 import org.springframework.retry.support.RetryTemplate;
 import org.springframework.util.Assert;
+import org.springframework.util.ObjectUtils;
 
 /**
  * Base model for a Kafka listener endpoint.
@@ -196,7 +196,6 @@ public abstract class AbstractKafkaListenerEndpoint<K, V>
 	 * @see #setTopicPattern(Pattern)
 	 */
 	@Deprecated
-	@SuppressWarnings("deprecation")
 	public void setTopicPartitions(org.springframework.kafka.support.TopicPartitionInitialOffset... topicPartitions) {
 		Assert.notNull(topicPartitions, "'topics' must not be null");
 		this.topicPartitions.clear();
@@ -218,20 +217,6 @@ public abstract class AbstractKafkaListenerEndpoint<K, V>
 		Assert.notNull(topicPartitions, "'topics' must not be null");
 		this.topicPartitions.clear();
 		this.topicPartitions.addAll(Arrays.asList(topicPartitions));
-	}
-
-	/**
-	 * Return the topicPartitions for this endpoint.
-	 * @return the topicPartitions for this endpoint.
-	 * @deprecated in favor of {@link #getTopicPartitionsToAssign()}
-	 */
-	@Deprecated
-	@SuppressWarnings("deprecation")
-	@Override
-	public Collection<org.springframework.kafka.support.TopicPartitionInitialOffset> getTopicPartitions() {
-		return Collections.unmodifiableCollection(this.topicPartitions.stream()
-				.map(org.springframework.kafka.support.TopicPartitionInitialOffset::fromTPO)
-				.collect(Collectors.toList()));
 	}
 
 	/**
@@ -450,7 +435,7 @@ public abstract class AbstractKafkaListenerEndpoint<K, V>
 	@Override
 	public void afterPropertiesSet() {
 		boolean topicsEmpty = getTopics().isEmpty();
-		boolean topicPartitionsEmpty = getTopicPartitions().isEmpty();
+		boolean topicPartitionsEmpty = ObjectUtils.isEmpty(getTopicPartitionsToAssign());
 		if (!topicsEmpty && !topicPartitionsEmpty) {
 			throw new IllegalStateException("Topics or topicPartitions must be provided but not both for " + this);
 		}
@@ -495,11 +480,11 @@ public abstract class AbstractKafkaListenerEndpoint<K, V>
 			if (this.batchListener) {
 				if (((MessagingMessageListenerAdapter<K, V>) messageListener).isConsumerRecords()) {
 					this.logger.warn(() -> "Filter strategy ignored when consuming 'ConsumerRecords'"
-								+ (this.id != null ? " id: " + this.id : ""));
+							+ (this.id != null ? " id: " + this.id : ""));
 				}
 				else {
 					messageListener = new FilteringBatchMessageListenerAdapter<>(
-						(BatchMessageListener<K, V>) messageListener, this.recordFilterStrategy, this.ackDiscarded);
+							(BatchMessageListener<K, V>) messageListener, this.recordFilterStrategy, this.ackDiscarded);
 				}
 			}
 			else {

@@ -38,10 +38,11 @@ import org.springframework.lang.Nullable;
  * </ul>
  * Offsets are applied when the container is {@code start()}ed.
  * This class is also used for deferred seek operations.
- * @deprecated in favor of {@code TopicPartitionOffset}.
  *
  * @author Artem Bilan
  * @author Gary Russell
+ *
+ * @deprecated in favor of {@code TopicPartitionOffset}.
  */
 @Deprecated
 public class TopicPartitionInitialOffset {
@@ -218,8 +219,9 @@ public class TopicPartitionInitialOffset {
 	 */
 	public static TopicPartitionInitialOffset fromTPO(TopicPartitionOffset offset) {
 		return new TopicPartitionInitialOffset(offset.getTopicPartition(), offset.getOffset(),
-				offset.getPosition() == null ? null
-				: SeekPosition.valueOf(offset.getPosition().name()));
+				offset.getPosition() == null
+						? null
+						: SeekPosition.valueOf(offset.getPosition().name()));
 	}
 
 	/**
@@ -230,9 +232,9 @@ public class TopicPartitionInitialOffset {
 	 */
 	public static TopicPartitionOffset toTPO(TopicPartitionInitialOffset offset) {
 		return new TopicPartitionOffset(offset.topicPartition(), offset.initialOffset(),
-				offset.getPosition() == null ? null
-				: TopicPartitionOffset.SeekPosition.valueOf(offset.getPosition().name()));
+				offset.getPosition() == null
+						? null
+						: TopicPartitionOffset.SeekPosition.valueOf(offset.getPosition().name()));
 	}
-
 
 }

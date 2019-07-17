@@ -259,9 +259,7 @@ public abstract class AbstractMessageListenerContainer<K, V>
 	@Override
 	public String getGroupId() {
 		return this.containerProperties.getGroupId() == null
-				? (String) this.consumerFactory
-						.getConfigurationProperties()
-						.get(ConsumerConfig.GROUP_ID_CONFIG)
+				? (String) this.consumerFactory.getConfigurationProperties().get(ConsumerConfig.GROUP_ID_CONFIG)
 				: this.containerProperties.getGroupId();
 	}
 
@@ -315,10 +313,10 @@ public abstract class AbstractMessageListenerContainer<K, V>
 	protected void checkTopics() {
 		if (this.containerProperties.isMissingTopicsFatal() && this.containerProperties.getTopicPattern() == null) {
 			Map<String, Object> configs = this.consumerFactory.getConfigurationProperties()
-				.entrySet()
-				.stream()
-				.filter(entry -> AdminClientConfig.configNames().contains(entry.getKey()))
-				.collect(Collectors.toMap(Entry::getKey, Entry::getValue));
+					.entrySet()
+					.stream()
+					.filter(entry -> AdminClientConfig.configNames().contains(entry.getKey()))
+					.collect(Collectors.toMap(Entry::getKey, Entry::getValue));
 			List<String> missing = null;
 			try (AdminClient client = AdminClient.create(configs)) {
 				if (client != null) {
@@ -330,19 +328,19 @@ public abstract class AbstractMessageListenerContainer<K, V>
 					}
 					DescribeTopicsResult result = client.describeTopics(Arrays.asList(topics));
 					missing = result.values()
-						.entrySet()
-						.stream()
-						.filter(entry -> {
-							try {
-								entry.getValue().get(this.topicCheckTimeout, TimeUnit.SECONDS);
-								return false;
-							}
-							catch (@SuppressWarnings("unused") Exception e) {
-								return true;
-							}
-						})
-						.map(Entry::getKey)
-						.collect(Collectors.toList());
+							.entrySet()
+							.stream()
+							.filter(entry -> {
+								try {
+									entry.getValue().get(this.topicCheckTimeout, TimeUnit.SECONDS);
+									return false;
+								}
+								catch (@SuppressWarnings("unused") Exception e) {
+									return true;
+								}
+							})
+							.map(Entry::getKey)
+							.collect(Collectors.toList());
 				}
 			}
 			catch (Exception e) {
@@ -426,13 +424,13 @@ public abstract class AbstractMessageListenerContainer<K, V>
 			@Override
 			public void onPartitionsRevoked(Collection<TopicPartition> partitions) {
 				AbstractMessageListenerContainer.this.logger.info(() ->
-					getGroupId() + ": partitions revoked: " + partitions);
+						getGroupId() + ": partitions revoked: " + partitions);
 			}
 
 			@Override
 			public void onPartitionsAssigned(Collection<TopicPartition> partitions) {
 				AbstractMessageListenerContainer.this.logger.info(() ->
-					getGroupId() + ": partitions assigned: " + partitions);
+						getGroupId() + ": partitions assigned: " + partitions);
 			}
 
 		};

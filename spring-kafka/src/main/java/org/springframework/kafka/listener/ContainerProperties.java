@@ -257,7 +257,6 @@ public class ContainerProperties {
 	 * @deprecated in favor of {@link #ContainerProperties(TopicPartitionOffset...)}.
 	 */
 	@Deprecated
-	@SuppressWarnings("deprecation")
 	public ContainerProperties(org.springframework.kafka.support.TopicPartitionInitialOffset... topicPartitions) {
 		this.topics = null;
 		this.topicPattern = null;
@@ -463,7 +462,6 @@ public class ContainerProperties {
 	 * @return the topics/partitions.
 	 */
 	@Deprecated
-	@SuppressWarnings("deprecation")
 	public org.springframework.kafka.support.TopicPartitionInitialOffset[] getTopicPartitions() {
 		return Arrays.stream(this.topicPartitionsToAssign)
 				.map(org.springframework.kafka.support.TopicPartitionInitialOffset::fromTPO)

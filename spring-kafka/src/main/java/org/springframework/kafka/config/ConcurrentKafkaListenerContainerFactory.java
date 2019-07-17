@@ -16,7 +16,6 @@
 
 package org.springframework.kafka.config;
 
-import java.util.Arrays;
 import java.util.Collection;
 
 import org.springframework.kafka.listener.ConcurrentMessageListenerContainer;
@@ -62,25 +61,26 @@ public class ConcurrentKafkaListenerContainerFactory<K, V>
 	protected ConcurrentMessageListenerContainer<K, V> createContainerInstance(KafkaListenerEndpoint endpoint) {
 		TopicPartitionOffset[] topicPartitions = endpoint.getTopicPartitionsToAssign();
 		if (topicPartitions != null && topicPartitions.length > 0) {
-			ContainerProperties properties = new ContainerProperties(
-					Arrays.copyOf(topicPartitions, topicPartitions.length));
-			return new ConcurrentMessageListenerContainer<K, V>(getConsumerFactory(), properties);
+			ContainerProperties properties = new ContainerProperties(topicPartitions);
+			return new ConcurrentMessageListenerContainer<>(getConsumerFactory(), properties);
 		}
 		else {
 			Collection<String> topics = endpoint.getTopics();
 			if (!topics.isEmpty()) {
 				ContainerProperties properties = new ContainerProperties(topics.toArray(new String[0]));
-				return new ConcurrentMessageListenerContainer<K, V>(getConsumerFactory(), properties);
+				return new ConcurrentMessageListenerContainer<>(getConsumerFactory(), properties);
 			}
 			else {
 				ContainerProperties properties = new ContainerProperties(endpoint.getTopicPattern());
-				return new ConcurrentMessageListenerContainer<K, V>(getConsumerFactory(), properties);
+				return new ConcurrentMessageListenerContainer<>(getConsumerFactory(), properties);
 			}
 		}
 	}
 
 	@Override
-	protected void initializeContainer(ConcurrentMessageListenerContainer<K, V> instance, KafkaListenerEndpoint endpoint) {
+	protected void initializeContainer(ConcurrentMessageListenerContainer<K, V> instance,
+			KafkaListenerEndpoint endpoint) {
+
 		super.initializeContainer(instance, endpoint);
 		if (endpoint.getConcurrency() != null) {
 			instance.setConcurrency(endpoint.getConcurrency());

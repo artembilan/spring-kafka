@@ -179,7 +179,6 @@ public class KafkaMessageListenerContainer<K, V> // NOSONAR line count
 	 * {@link #KafkaMessageListenerContainer(AbstractMessageListenerContainer, ConsumerFactory, ContainerProperties, TopicPartitionOffset...)}
 	 */
 	@Deprecated
-	@SuppressWarnings("deprecation")
 	KafkaMessageListenerContainer(AbstractMessageListenerContainer<K, V> container,
 			ConsumerFactory<? super K, ? super V> consumerFactory, ContainerProperties containerProperties,
 			org.springframework.kafka.support.TopicPartitionInitialOffset... topicPartitions) {

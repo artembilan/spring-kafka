@@ -52,7 +52,6 @@ public interface KafkaListenerContainerFactory<C extends MessageListenerContaine
 	 * @since 2.2
 	 */
 	@Deprecated
-	@SuppressWarnings("deprecation")
 	C createContainer(Collection<org.springframework.kafka.support.TopicPartitionInitialOffset> topicPartitions);
 
 	/**

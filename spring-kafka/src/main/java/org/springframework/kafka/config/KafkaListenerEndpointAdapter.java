@@ -57,17 +57,6 @@ class KafkaListenerEndpointAdapter implements KafkaListenerEndpoint {
 		return Collections.emptyList();
 	}
 
-	/**
-	 * {@inheritDoc}
-	 * @deprecated in favor of {@link #getTopicPartitionsToAssign()}.
-	 */
-	@Deprecated
-	@SuppressWarnings("deprecation")
-	@Override
-	public Collection<org.springframework.kafka.support.TopicPartitionInitialOffset> getTopicPartitions() {
-		return Collections.emptyList();
-	}
-
 	@Override
 	public TopicPartitionOffset[] getTopicPartitionsToAssign() {
 		return new TopicPartitionOffset[0];
