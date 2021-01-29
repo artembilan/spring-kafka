@@ -191,6 +191,13 @@ subprojects { subproject ->
 		toolVersion = '8.38'
 	}
 
+	jacocoTestReport {
+		reports {
+			xml.enabled true
+			csv.enabled false
+		}
+	}
+
 	build.dependsOn jacocoTestReport
 
 	publishing {
