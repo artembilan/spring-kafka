@@ -193,8 +193,9 @@ subprojects { subproject ->
 
 	jacocoTestReport {
 		reports {
-			xml.enabled true
+			xml.enabled false
 			csv.enabled false
+			html.destination file("${buildDir}/reports/jacoco/html")
 		}
 	}
 
