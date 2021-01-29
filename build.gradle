@@ -203,7 +203,7 @@ subprojects { subproject ->
 			xml.enabled true
 			csv.enabled false
 			html.enabled false
-			xml.destination file("${buildDir}/reports/jacoco/xml")
+			xml.destination file("${buildDir}/reports/jacoco/test/jacocoTestReport.xml")
 		}
 	}
 
