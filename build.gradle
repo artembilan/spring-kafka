@@ -183,23 +183,12 @@ subprojects { subproject ->
 		logging.captureStandardOutput(LogLevel.INFO)
 		maxHeapSize = '1536m'
 //		jvmArgs '-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=127.0.0.1:8111'
-		jacoco {
-			destinationFile = file("$buildDir/jacoco.exec")
-		}
 		useJUnitPlatform()
 	}
 
 	checkstyle {
 		configDirectory.set(rootProject.file("src/checkstyle"))
 		toolVersion = '8.38'
-	}
-
-	jacocoTestReport {
-		reports {
-			xml.enabled false
-			csv.enabled false
-			html.destination file("${buildDir}/reports/jacoco/html")
-		}
 	}
 
 	build.dependsOn jacocoTestReport
@@ -419,13 +408,11 @@ reference.onlyIf { "$System.env.NO_REFERENCE_TASK" != 'true' || project.hasPrope
 
 sonarqube {
 	properties {
-		property 'sonar.jacoco.reportPaths', "${buildDir.name}/jacoco.exec"
 		property 'sonar.links.homepage', linkHomepage
 		property 'sonar.links.ci', linkCi
 		property 'sonar.links.issue', linkIssue
 		property 'sonar.links.scm', linkScmUrl
 		property 'sonar.links.scm_dev', linkScmDevConnection
-		property 'sonar.java.coveragePlugin', 'jacoco'
 	}
 }
 
